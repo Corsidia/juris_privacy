@@ -41,4 +41,23 @@ class ObscurerTest < Minitest::Test
                                'L*** B******(1)' => 'Lara Bassini' }
     assert_equal expected_censored_data, @obscurer.censored_data_for(text)
   end
+
+  def test_misc
+    text = 'ciao io mi chiamo luca paoli, qui c\'è un sacco di Gente CHE NON '\
+           'conosco nemmeno TANTO Bene, ci sono per esempio marco di cui '\
+           'non ricordo il cognome, Marco Carta, Luca Carboni, '\
+           'Maria De Filippi, Antonio Conte, PIppo Baudo... e per finire '\
+           'l\'ospite speciale di questa serata è Raffaella Carrà'
+    expected_censored_data = { 'L***' => 'luca',
+                               'M****' => 'marco',
+                               'M**** C****' => 'Marco Carta',
+                               'L*** C******' => 'Luca Carboni',
+                               'A****** C****' => 'Antonio Conte',
+                               'R******** C***' => 'Raffaella Carr',
+                               'C**' => 'CHE',
+                               'N**' => 'NON',
+                               'T****' => 'TANTO',
+                               'I*** B****' => 'Ippo Baudo' }
+    assert_equal expected_censored_data, @obscurer.censored_data_for(text)
+  end
 end

@@ -17,11 +17,31 @@ module JurisPrivacy
       new_content = content.gsub(already_detected_regex, '')
       censored_words = censored_words_for new_content
 
-      censored_full_names.merge censored_words
+      # Kill everything that might be dangerous
+      already_detected_regex = /#{censored_words.values.join('|')}/
+      new_content = new_content.gsub(already_detected_regex, '')
+      killed_words = killed_words_for new_content
+
+      censored_full_names
+        .merge(censored_words)
+        .merge(killed_words)
+    end
+
+    def killed_words_for(content)
+      upcase_word_regex = /[A-Z]{2,}/
+      upcase_words = content.scan(upcase_word_regex)
+
+      killed_words = {}
+      upcase_words.each do |word|
+        unique_killed_word = uniquify_hash_key(censor_word(word),
+                                               killed_words)
+        killed_words[unique_killed_word] = word
+      end
+      killed_words
     end
 
     def censored_full_names_for(content)
-      name_surname_regex = /[A-Z][a-z]{2,25}\s[A-Z][a-z]{2,25}/
+      name_surname_regex = /[A-Z][a-záéíóú]{2,25}\s[A-Z][a-záéíóú]{2,25}/
       full_names = content.scan(name_surname_regex)
 
       censored_full_names = {}
