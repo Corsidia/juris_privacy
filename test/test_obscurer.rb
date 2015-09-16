@@ -1,5 +1,4 @@
-require 'minitest/autorun'
-require 'juris_privacy'
+require_relative 'test_helper'
 
 # ObscurerTest
 class ObscurerTest < Minitest::Test
