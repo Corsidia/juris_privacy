@@ -60,4 +60,12 @@ class TestObscurer < Minitest::Test
                                'I*** B****' => 'Ippo Baudo' }
     assert_equal expected_censored_data, @obscurer.censored_data_for(text)
   end
+
+  def test_obscure_text
+    text = 'ciao io mi chiamo Michele Ferrucci, la mia amica invece '\
+           'si chiama Michela Falcioni'
+    expected_obscured_text = 'ciao io mi chiamo M****** F*******, '\
+                             'la mia amica invece si chiama M****** F*******(1)'
+    assert_equal expected_obscured_text, @obscurer.obscure_text(text)
+  end
 end

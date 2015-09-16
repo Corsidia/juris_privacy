@@ -77,13 +77,6 @@ module JurisPrivacy
       text
     end
 
-    def obscure_file(src_path, dst_path)
-      file_content = File.open(src_path, 'rb', &read)
-      obscured_content = obscure_text file_content
-
-      File.open(dst_path, 'w') { |f| f.puts(obscured_content) }
-    end
-
     private
 
     def false_positive?(full_name)
