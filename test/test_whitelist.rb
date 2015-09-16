@@ -11,6 +11,7 @@ class TestWhitelist < Minitest::Test
     end
 
     assert !@whitelist.whitelisted?('gamberini')
+    assert_equal whitelisted_words, @whitelist.words
   end
 
   def test_file_source
@@ -22,5 +23,6 @@ class TestWhitelist < Minitest::Test
     end
 
     assert !@whitelist.whitelisted?('lorenzo')
+    assert_equal %w(cavallo trota salmone gallo), @whitelist.words
   end
 end

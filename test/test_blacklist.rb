@@ -11,6 +11,7 @@ class TestBlacklist < Minitest::Test
     end
 
     assert !@blacklist.blacklisted?('missile')
+    assert_equal blacklisted_words, @blacklist.words
   end
 
   def test_file_source
@@ -22,5 +23,6 @@ class TestBlacklist < Minitest::Test
     end
 
     assert !@blacklist.blacklisted?('pappardella')
+    assert_equal %w(marco giulio franco angelo), @blacklist.words
   end
 end

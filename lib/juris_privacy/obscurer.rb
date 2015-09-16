@@ -4,7 +4,13 @@ require_relative 'blacklist'
 module JurisPrivacy
   # Obscurer
   class Obscurer
-    def initialize(whitelist = Whitelist.new, blacklist = Blacklist.new)
+    WHITELIST_DATA_PATH =
+      'lib/juris_privacy/whitelist_data/whitelist_words_it.data'
+    BLACKLIST_DATA_PATH =
+      'lib/juris_privacy/blacklist_data/blacklist_words_it.data'
+
+    def initialize(whitelist = Whitelist.new(WHITELIST_DATA_PATH),
+                   blacklist = Blacklist.new(BLACKLIST_DATA_PATH))
       @whitelist = whitelist
       @blacklist = blacklist
     end

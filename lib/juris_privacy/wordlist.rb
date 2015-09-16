@@ -1,25 +1,22 @@
 module JurisPrivacy
   # Wordlist
   class Wordlist
-    def initialize(word_source, default_data_path)
-      if word_source.is_a? Array
-        @words = word_source
-      elsif word_source.is_a? String
-        @data_path = word_source
-      else
-        @data_path = default_data_path
+    def initialize(words_source)
+      case words_source
+      when Array then @words = words_source
+      when String then @words = File
+                                .readlines(words_source)
+                                .collect(&:chomp)
+                                .compact
+      else fail ArgumentError,
+                'Wordlist accepts only String and Array as words source'
       end
-    end
-
-    def words
-      @words ||= File
-                 .readlines(@data_path)
-                 .collect(&:chomp)
-                 .compact
     end
 
     def include?(word)
       words.include?(word)
     end
+
+    attr_reader :words
   end
 end
