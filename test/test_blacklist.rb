@@ -1,7 +1,7 @@
 require_relative 'test_helper'
 
-# BlacklistTest
-class BlacklistTest < Minitest::Test
+# TestBlacklist
+class TestBlacklist < Minitest::Test
   def test_array_source
     blacklisted_words = %w(lorenzo francesco)
     @blacklist = JurisPrivacy::Blacklist.new blacklisted_words

@@ -1,7 +1,7 @@
 require_relative 'test_helper'
 
-# WhitelistTest
-class WhitelistTest < Minitest::Test
+# TestWhitelist
+class TestWhitelist < Minitest::Test
   def test_array_source
     whitelisted_words = %w(arena bicicletta)
     @whitelist = JurisPrivacy::Whitelist.new whitelisted_words

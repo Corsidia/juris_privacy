@@ -1,7 +1,7 @@
 require_relative 'test_helper'
 
-# ObscurerTest
-class ObscurerTest < Minitest::Test
+# TestObscurer
+class TestObscurer < Minitest::Test
   def setup
     whitelisted_words = %w(arena bicicletta)
     whitelist = JurisPrivacy::Whitelist.new whitelisted_words
@@ -41,6 +41,7 @@ class ObscurerTest < Minitest::Test
     assert_equal expected_censored_data, @obscurer.censored_data_for(text)
   end
 
+  # rubocop:disable Metrics/MethodLength
   def test_misc
     text = 'ciao io mi chiamo luca paoli, qui c\'è un sacco di Gente CHE NON '\
            'conosco nemmeno TANTO Bene, ci sono per esempio marco di cui '\

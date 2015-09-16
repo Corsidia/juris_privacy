@@ -3,6 +3,7 @@ rvm:
   - 2.2.3
 install:
   - gem install minitest
+  - gem install minitest-reporters
   - gem install codeclimate-test-reporter
 env:
 - CODECLIMATE_REPO_TOKEN=82249d154838760dcaea6fa95a7783a0fe9e4e86637db1f78e648d6c0ef0cef2
