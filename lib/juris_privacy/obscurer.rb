@@ -4,26 +4,63 @@ require_relative 'blacklist'
 module JurisPrivacy
   # Obscurer
   class Obscurer
-    NAME_SURNAME_REGEX = /[A-Z][a-z]{2,25}\s[A-Z][a-z]{2,25}/
-
     def initialize(whitelist = Whitelist.new, blacklist = Blacklist.new)
       @whitelist = whitelist
       @blacklist = blacklist
     end
 
-    def obscure(content)
-      full_names = content.scan(NAME_SURNAME_REGEX)
+    def censored_data_for(content)
+      censored_full_names = censored_full_names_for content
 
+      # Ensure that all blacklisted words in content have been censored
+      already_detected_regex = /#{censored_full_names.values.join('|')}/
+      new_content = content.gsub(already_detected_regex, '')
+      censored_words = censored_words_for new_content
+
+      censored_full_names.merge censored_words
+    end
+
+    def censored_full_names_for(content)
+      name_surname_regex = /[A-Z][a-z]{2,25}\s[A-Z][a-z]{2,25}/
+      full_names = content.scan(name_surname_regex)
+
+      censored_full_names = {}
       full_names.each do |full_name|
         next if false_positive?(full_name)
-        content.gsub!(full_name, initials_of(full_name))
+
+        unique_censored_name = uniquify_hash_key(censor_full_name(full_name),
+                                                 censored_full_names)
+        censored_full_names[unique_censored_name] = full_name
       end
-      content
+      censored_full_names
+    end
+
+    def censored_words_for(content)
+      blacklisted_regex = /#{@blacklist.words.join('|')}/
+      blacklisted_words = content.scan(blacklisted_regex)
+
+      censored_words = {}
+      blacklisted_words.each do |word|
+        unique_censored_word = uniquify_hash_key(censor_word(word),
+                                                 censored_words)
+        censored_words[unique_censored_word] = word
+      end
+      censored_words
+    end
+
+    def obscure_text(text)
+      censored_data = censored_data_for text
+
+      censored_data.each do |censored_datum, datum|
+        text.gsub!(datum, censored_datum)
+      end
+      text
     end
 
     def obscure_file(src_path, dst_path)
       file_content = File.open(src_path, 'rb', &read)
-      obscured_content = obscure file_content
+      obscured_content = obscure_text file_content
+
       File.open(dst_path, 'w') { |f| f.puts(obscured_content) }
     end
 
@@ -41,13 +78,22 @@ module JurisPrivacy
         @whitelist.whitelisted?(surname)
     end
 
-    def initial_of(word)
-      "#{word[0].upcase}."
+    def censor_word(word)
+      "#{word[0].upcase}#{'*' * (word.length - 1)}"
     end
 
-    def initials_of(full_name)
+    def censor_full_name(full_name)
       name, surname = full_name.split(/\s/)
-      "#{initial_of(name)} #{initial_of(surname)}"
+      "#{censor_word(name)} #{censor_word(surname)}"
+    end
+
+    def uniquify_hash_key(key, hash)
+      n = 0
+      while hash.include? key
+        n += 1
+        key = "#{key}(#{n})"
+      end
+      key
     end
   end
 end
