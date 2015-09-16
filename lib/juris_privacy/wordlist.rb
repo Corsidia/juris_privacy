@@ -9,7 +9,7 @@ module JurisPrivacy
                                 .collect(&:chomp)
                                 .compact
       else fail ArgumentError,
-                'Wordlist accepts only String and Array as words source'
+                'Accepts only String and Array as words source'
       end
     end
 

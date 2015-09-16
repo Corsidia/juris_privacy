@@ -25,4 +25,13 @@ class TestWhitelist < Minitest::Test
     assert !@whitelist.whitelisted?('lorenzo')
     assert_equal %w(cavallo trota salmone gallo), @whitelist.words
   end
+
+  def test_wrong_source
+    error = assert_raises ArgumentError do
+      @whitelist = JurisPrivacy::Whitelist.new 42
+    end
+
+    expected_error_message = 'Accepts only String and Array as words source'
+    assert_equal expected_error_message, error.message
+  end
 end
