@@ -41,6 +41,13 @@ class TestObscurer < Minitest::Test
     assert_equal expected_censored_data, @obscurer.censored_data_for(text)
   end
 
+  def test_name_with_prefixes
+    text = 'ciao io mi chiamo Maria De Filippi, il mio amico Michele D\'Ubaldo'
+    expected_censored_data = { 'M**** D* F******' => 'Maria De Filippi',
+                               'M****** D*******' => 'Michele D\'Ubaldo' }
+    assert_equal expected_censored_data, @obscurer.censored_data_for(text)
+  end
+
   # rubocop:disable Metrics/MethodLength
   def test_misc
     text = 'ciao io mi chiamo luca paoli, qui c\'è un sacco di Gente CHE NON '\
@@ -57,7 +64,8 @@ class TestObscurer < Minitest::Test
                                'C**' => 'CHE',
                                'N**' => 'NON',
                                'T****' => 'TANTO',
-                               'I*** B****' => 'Ippo Baudo' }
+                               'I*** B****' => 'Ippo Baudo',
+                               'M**** D* F******' => 'Maria De Filippi' }
     assert_equal expected_censored_data, @obscurer.censored_data_for(text)
   end
 
