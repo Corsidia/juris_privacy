@@ -38,7 +38,6 @@ module JurisPrivacy
     end
 
     def censored_upcase_words_for(content)
-      upcase_word_regex = /[A-Z]{2,}/
       upcase_words = content.scan(upcase_word_regex)
 
       censored_upcase_words = {}
@@ -65,7 +64,6 @@ module JurisPrivacy
     end
 
     def censored_blacklist_words_for(content)
-      blacklist_word_regex = /#{@blacklist.words.join('|')}/
       blacklist_words = content.scan(blacklist_word_regex)
 
       censored_blacklist_words = {}
@@ -87,6 +85,14 @@ module JurisPrivacy
     end
 
     private
+
+    def blacklist_word_regex
+      /#{@blacklist.words.join('|')}/
+    end
+
+    def upcase_word_regex
+      /[A-Z]{2,}/
+    end
 
     def full_name_regex
       name_regex = /[A-Z][a-záéíóú]{2,25}\s/
@@ -119,7 +125,7 @@ module JurisPrivacy
 
     def censor_full_name(full_name)
       full_name_words = full_name.split(/\s/)
-      full_name_words.collect { |word| censor_word(word) }.join(' ')
+      full_name_words.map { |word| censor_word(word) }.join(' ')
     end
 
     def uniquify_hash_key(key, hash)
