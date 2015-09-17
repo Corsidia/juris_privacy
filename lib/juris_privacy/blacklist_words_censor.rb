@@ -12,6 +12,7 @@ module JurisPrivacy
 
     def inspect(content)
       blacklist_words = content.scan(blacklist_word_regex)
+      blacklist_words.map! { |word| word.gsub(/\W/, '') }
 
       censored_blacklist_words = {}
       blacklist_words.each do |word|
@@ -25,7 +26,11 @@ module JurisPrivacy
     private
 
     def blacklist_word_regex
-      /#{@blacklist.words.join('|')}/
+      /
+        \W+
+        (?:#{@blacklist.words.join('|')})
+        \W+
+      /xi
     end
   end
 end

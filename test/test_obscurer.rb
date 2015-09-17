@@ -76,4 +76,10 @@ class TestObscurer < Minitest::Test
                              'la mia amica invece si chiama M****** F*******(1)'
     assert_equal expected_obscured_text, @obscurer.obscure_text(text)
   end
+
+  # def test_sample_input
+  #   sample_input = File.read('test/fixtures/sample_input_2.txt')
+  #   obscurer2 = JurisPrivacy::Obscurer.new {}
+  #   p obscurer2.blacklist_words_inspect(sample_input).values.delete_if { |word| word =~ /^[A-Z]/ }
+  # end
 end

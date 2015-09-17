@@ -43,7 +43,7 @@ module JurisPrivacy
       text
     end
 
-    private
+    # private
 
     def full_names_inspect(content)
       full_names_censor = FullNamesCensor.new @whitelist, @blacklist
