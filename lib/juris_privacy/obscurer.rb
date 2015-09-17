@@ -1,5 +1,8 @@
 require_relative 'whitelist'
 require_relative 'blacklist'
+require_relative 'full_names_censor'
+require_relative 'blacklist_words_censor'
+require_relative 'upcase_words_censor'
 
 module JurisPrivacy
   # Obscurer
@@ -15,68 +18,24 @@ module JurisPrivacy
       @blacklist = blacklist
     end
 
-    def censored_data_for(content)
-      censored_full_names = censored_full_names_for content
+    def inspect(content)
+      censored_full_names = full_names_inspect content
 
       # Ensure that all blacklisted words in content have been censored
-      already_detected_regex = /#{censored_full_names.values.join('|')}/
-      new_content = content.gsub(already_detected_regex, '')
-      censored_blacklist_words = censored_blacklist_words_for new_content
+      new_content = delete_censored_words(content, censored_full_names)
+      censored_blacklist_words = blacklist_words_inspect new_content
 
       # Kill everything that might be dangerous
-      already_detected_regex = /#{censored_blacklist_words.values.join('|')}/
-      new_content = new_content.gsub(already_detected_regex, '')
-      killed_words = killed_words_for new_content
+      new_content = delete_censored_words(new_content, censored_blacklist_words)
+      censored_upcase_words = upcase_words_inspect new_content
 
       censored_full_names
         .merge(censored_blacklist_words)
-        .merge(killed_words)
-    end
-
-    def killed_words_for(content)
-      censored_upcase_words_for content
-    end
-
-    def censored_upcase_words_for(content)
-      upcase_words = content.scan(upcase_word_regex)
-
-      censored_upcase_words = {}
-      upcase_words.each do |word|
-        unique_censored_word = uniquify_hash_key(censor_word(word),
-                                                 censored_upcase_words)
-        censored_upcase_words[unique_censored_word] = word
-      end
-      censored_upcase_words
-    end
-
-    def censored_full_names_for(content)
-      full_names = content.scan(full_name_regex)
-
-      censored_full_names = {}
-      full_names.each do |full_name|
-        next if false_positive?(full_name)
-
-        unique_censored_name = uniquify_hash_key(censor_full_name(full_name),
-                                                 censored_full_names)
-        censored_full_names[unique_censored_name] = full_name
-      end
-      censored_full_names
-    end
-
-    def censored_blacklist_words_for(content)
-      blacklist_words = content.scan(blacklist_word_regex)
-
-      censored_blacklist_words = {}
-      blacklist_words.each do |word|
-        unique_censored_word = uniquify_hash_key(censor_word(word),
-                                                 censored_blacklist_words)
-        censored_blacklist_words[unique_censored_word] = word
-      end
-      censored_blacklist_words
+        .merge(censored_upcase_words)
     end
 
     def obscure_text(text)
-      censored_data = censored_data_for text
+      censored_data = inspect text
 
       censored_data.each do |censored_datum, datum|
         text.gsub!(datum, censored_datum)
@@ -86,55 +45,24 @@ module JurisPrivacy
 
     private
 
-    def blacklist_word_regex
-      /#{@blacklist.words.join('|')}/
+    def full_names_inspect(content)
+      full_names_censor = FullNamesCensor.new @whitelist, @blacklist
+      full_names_censor.inspect content
     end
 
-    def upcase_word_regex
-      /[A-Z]{2,}/
+    def blacklist_words_inspect(content)
+      blacklist_words_censor = BlacklistWordsCensor.new @blacklist
+      blacklist_words_censor.inspect content
     end
 
-    def full_name_regex
-      name_regex = /[A-Z][a-záéíóú]{2,25}\s/
-      surname_regex = /[A-Z][a-záéíóú]{2,25}/
-      surname_prefix_regex = /[A-Z](?:[a-z]\s|\')/
-      /
-        #{name_regex}
-        (?:#{surname_prefix_regex})?
-        #{surname_regex}
-      /x
+    def upcase_words_inspect(content)
+      upcase_words_censor = UpcaseWordsCensor.new
+      upcase_words_censor.inspect content
     end
 
-    def false_positive?(full_name)
-      full_name_words = full_name.split(/\s/)
-      name = full_name_words.first
-      surname = full_name_words.last
-
-      return false if @blacklist.blacklisted?(full_name) ||
-                      @blacklist.blacklisted?(name) ||
-                      @blacklist.blacklisted?(surname)
-
-      @whitelist.whitelisted?(full_name) ||
-        @whitelist.whitelisted?(name) ||
-        @whitelist.whitelisted?(surname)
-    end
-
-    def censor_word(word)
-      "#{word[0].upcase}#{'*' * (word.length - 1)}"
-    end
-
-    def censor_full_name(full_name)
-      full_name_words = full_name.split(/\s/)
-      full_name_words.map { |word| censor_word(word) }.join(' ')
-    end
-
-    def uniquify_hash_key(key, hash)
-      n = 0
-      while hash.include? key
-        n += 1
-        key = "#{key}(#{n})"
-      end
-      key
+    def delete_censored_words(content, censored_words)
+      clean_regex = /#{censored_words.values.join('|')}/
+      content.gsub(clean_regex, '')
     end
   end
 end

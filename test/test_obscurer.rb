@@ -14,21 +14,21 @@ class TestObscurer < Minitest::Test
   def test_whitelist
     text = 'ciao io mi chiamo Lattuga Bicicletta'
     expected_censored_data = {}
-    assert_equal expected_censored_data, @obscurer.censored_data_for(text)
+    assert_equal expected_censored_data, @obscurer.inspect(text)
   end
 
   # Censor blacklisted words
   def test_blacklist
     text = 'ciao io mi chiamo luca paoli'
     expected_censored_data = { 'L***' => 'luca' }
-    assert_equal expected_censored_data, @obscurer.censored_data_for(text)
+    assert_equal expected_censored_data, @obscurer.inspect(text)
   end
 
   # Blacklist has priority over Whitelist
   def test_black_and_white_priority
     text = 'ciao io mi chiamo Luca Bicicletta'
     expected_censored_data = { 'L*** B*********' => 'Luca Bicicletta' }
-    assert_equal expected_censored_data, @obscurer.censored_data_for(text)
+    assert_equal expected_censored_data, @obscurer.inspect(text)
   end
 
   # Names with same initials and number of letters
@@ -38,14 +38,14 @@ class TestObscurer < Minitest::Test
            'e questa è la mia amica Lara Bassini'
     expected_censored_data = { 'L*** B******' => 'Luca Baffoni',
                                'L*** B******(1)' => 'Lara Bassini' }
-    assert_equal expected_censored_data, @obscurer.censored_data_for(text)
+    assert_equal expected_censored_data, @obscurer.inspect(text)
   end
 
   def test_name_with_prefixes
     text = 'ciao io mi chiamo Maria De Filippi, il mio amico Michele D\'Ubaldo'
     expected_censored_data = { 'M**** D* F******' => 'Maria De Filippi',
                                'M****** D*******' => 'Michele D\'Ubaldo' }
-    assert_equal expected_censored_data, @obscurer.censored_data_for(text)
+    assert_equal expected_censored_data, @obscurer.inspect(text)
   end
 
   # rubocop:disable Metrics/MethodLength
@@ -66,7 +66,7 @@ class TestObscurer < Minitest::Test
                                'T****' => 'TANTO',
                                'I*** B****' => 'Ippo Baudo',
                                'M**** D* F******' => 'Maria De Filippi' }
-    assert_equal expected_censored_data, @obscurer.censored_data_for(text)
+    assert_equal expected_censored_data, @obscurer.inspect(text)
   end
 
   def test_obscure_text
