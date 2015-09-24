@@ -1,8 +1,7 @@
 require_relative 'whitelist'
 require_relative 'blacklist'
-require_relative 'full_names_censor'
-require_relative 'blacklist_words_censor'
-require_relative 'upcase_words_censor'
+require_relative 'censors/full_names_censor'
+require_relative 'censors/blacklist_words_censor'
 
 module JurisPrivacy
   # Obscurer
@@ -49,11 +48,6 @@ module JurisPrivacy
     def blacklist_words_inspect(content)
       blacklist_words_censor = BlacklistWordsCensor.new @blacklist
       blacklist_words_censor.inspect content
-    end
-
-    def upcase_words_inspect(content)
-      upcase_words_censor = UpcaseWordsCensor.new
-      upcase_words_censor.inspect content
     end
 
     def delete_already_censored_words(content, censored_words)

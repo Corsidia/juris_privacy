@@ -1,4 +1,4 @@
-require_relative 'blacklist'
+require_relative '../blacklist'
 require_relative 'censor_utils'
 
 module JurisPrivacy
