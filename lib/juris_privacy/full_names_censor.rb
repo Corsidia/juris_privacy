@@ -31,7 +31,10 @@ module JurisPrivacy
     def full_name_regex
       name_regex = /[A-Z][a-záéíóú]{2,25}\s/
       surname_regex = /[A-Z][a-záéíóú]{2,25}/
-      surname_prefix_regex = /[A-Z](?:[a-z]\s|\')/
+
+      two_chars_prefix = /[A-Z](?:[a-z]\s|\')/
+      common_prefixes = /Dell\'|Della\s|Dello\s|Del\s|Degli\s|Delle\s|Dei\s/
+      surname_prefix_regex = /(?:#{two_chars_prefix}|#{common_prefixes})/
       /
         #{name_regex}
         (?:#{surname_prefix_regex})?
@@ -39,23 +42,36 @@ module JurisPrivacy
       /x
     end
 
-    def false_positive?(full_name)
+    def censor_full_name(full_name)
+      censor_all = contains_blacklist_words?(full_name)
+
       full_name_words = full_name.split(/\s/)
-      name = full_name_words.first
-      surname = full_name_words.last
-
-      return false if @blacklist.blacklisted?(full_name) ||
-                      @blacklist.blacklisted?(name) ||
-                      @blacklist.blacklisted?(surname)
-
-      @whitelist.whitelisted?(full_name) ||
-        @whitelist.whitelisted?(name) ||
-        @whitelist.whitelisted?(surname)
+      full_name_words.map do |word|
+        censor_all || !allowed_word?(word) ? censor_word(word) : word
+      end.join
     end
 
-    def censor_full_name(full_name)
+    def contains_blacklist_words?(full_name)
       full_name_words = full_name.split(/\s/)
-      full_name_words.map { |word| censor_word(word) }.join(' ')
+      full_name_words.each do |word|
+        return true if @blacklist.blacklisted?(word)
+      end
+      false
+    end
+
+    def false_positive?(full_name)
+      return false if @blacklist.blacklisted?(full_name)
+      return true if @whitelist.whitelisted?(full_name)
+
+      full_name_words = full_name.split(/\s/)
+      full_name_words.each do |word|
+        return false unless allowed_word?(word)
+      end
+      true
+    end
+
+    def allowed_word?(word)
+      @whitelist.whitelisted?(word) && !@blacklist.blacklisted?(word)
     end
   end
 end

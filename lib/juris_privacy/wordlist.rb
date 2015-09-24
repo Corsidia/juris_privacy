@@ -17,6 +17,10 @@ module JurisPrivacy
       words.include?(word)
     end
 
+    def add_word(word)
+      @words << word
+    end
+
     attr_reader :words
   end
 end

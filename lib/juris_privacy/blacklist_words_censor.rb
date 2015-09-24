@@ -11,26 +11,30 @@ module JurisPrivacy
     end
 
     def inspect(content)
-      blacklist_words = content.scan(blacklist_word_regex)
-      blacklist_words.map! { |word| word.gsub(/\W/, '') }
+      blacklist_matches = content.scan(blacklist_word_regex)
 
-      censored_blacklist_words = {}
-      blacklist_words.each do |word|
-        unique_censored_word = uniquify_hash_key(censor_word(word),
-                                                 censored_blacklist_words)
-        censored_blacklist_words[unique_censored_word] = word
+      censored_blacklist_matches = {}
+      blacklist_matches.each do |bl_match|
+        unique_censored_match = uniquify_hash_key(censor_bl_match(bl_match),
+                                                  censored_blacklist_matches)
+        censored_blacklist_matches[unique_censored_match] = bl_match
       end
-      censored_blacklist_words
+      censored_blacklist_matches
     end
 
     private
 
     def blacklist_word_regex
       /
-        \W+
-        (?:#{@blacklist.words.join('|')})
-        \W+
-      /xi
+        (?:[A-Z][a-záéíóú]{2,25}\s+)?
+        (?i:#{@blacklist.words.join('|')})
+        (?:\s+[A-Z][a-záéíóú]{2,25})?
+      /x
+    end
+
+    def censor_bl_match(blacklist_match)
+      blacklist_match_words = blacklist_match.split(/\s/)
+      blacklist_match_words.map { |word| censor_word(word) }.join
     end
   end
 end

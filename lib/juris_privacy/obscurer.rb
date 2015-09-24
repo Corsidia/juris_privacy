@@ -20,18 +20,14 @@ module JurisPrivacy
 
     def inspect(content)
       censored_full_names = full_names_inspect content
+      update_blacklist_with_full_names(censored_full_names.values)
 
-      # Ensure that all blacklisted words in content have been censored
-      new_content = delete_censored_words(content, censored_full_names)
+      new_content = delete_already_censored_words(content,
+                                                  censored_full_names.values)
       censored_blacklist_words = blacklist_words_inspect new_content
-
-      # Kill everything that might be dangerous
-      new_content = delete_censored_words(new_content, censored_blacklist_words)
-      censored_upcase_words = upcase_words_inspect new_content
 
       censored_full_names
         .merge(censored_blacklist_words)
-        .merge(censored_upcase_words)
     end
 
     def obscure_text(text)
@@ -60,9 +56,19 @@ module JurisPrivacy
       upcase_words_censor.inspect content
     end
 
-    def delete_censored_words(content, censored_words)
-      clean_regex = /#{censored_words.values.join('|')}/
-      content.gsub(clean_regex, '')
+    def delete_already_censored_words(content, censored_words)
+      return content if censored_words.empty?
+      clean_regex = /#{censored_words.join('|')}/
+      content.gsub(clean_regex, '***')
+    end
+
+    def update_blacklist_with_full_names(full_names)
+      full_names.each do |full_name|
+        @blacklist.add_word(full_name)
+
+        full_name_words = full_name.split(/\s/)
+        full_name_words.each { |word| @blacklist.add_word(word) }
+      end
     end
   end
 end
