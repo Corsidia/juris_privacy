@@ -2,6 +2,7 @@ require_relative 'whitelist'
 require_relative 'blacklist'
 require_relative 'censors/full_names_censor'
 require_relative 'censors/blacklist_words_censor'
+require_relative 'censors/tax_codes_censor'
 
 module JurisPrivacy
   # Obscurer
@@ -18,15 +19,16 @@ module JurisPrivacy
     end
 
     def inspect(content)
-      censored_full_names = full_names_inspect content
-      update_blacklist_with_full_names(censored_full_names.values)
-
-      new_content = delete_already_censored_words(content,
-                                                  censored_full_names.values)
-      censored_blacklist_words = blacklist_words_inspect new_content
-
-      censored_full_names
-        .merge(censored_blacklist_words)
+      new_content = content.dup
+      global_censored_words = {}
+      censors.each do |censor|
+        censored_words = censor.inspect new_content
+        global_censored_words.merge! censored_words
+        update_blacklist(censored_words.values)
+        new_content = delete_already_censored_words(new_content,
+                                                    censored_words.values)
+      end
+      global_censored_words
     end
 
     def obscure_text(text)
@@ -38,16 +40,14 @@ module JurisPrivacy
       text
     end
 
-    # private
+    private
 
-    def full_names_inspect(content)
-      full_names_censor = FullNamesCensor.new @whitelist, @blacklist
-      full_names_censor.inspect content
-    end
-
-    def blacklist_words_inspect(content)
-      blacklist_words_censor = BlacklistWordsCensor.new @blacklist
-      blacklist_words_censor.inspect content
+    def censors
+      [
+        FullNamesCensor.new(@whitelist, @blacklist),
+        BlacklistWordsCensor.new(@blacklist),
+        TaxCodesCensor.new
+      ]
     end
 
     def delete_already_censored_words(content, censored_words)
@@ -56,12 +56,12 @@ module JurisPrivacy
       content.gsub(clean_regex, '***')
     end
 
-    def update_blacklist_with_full_names(full_names)
-      full_names.each do |full_name|
-        @blacklist.add_word(full_name)
+    def update_blacklist(dangerous_things)
+      dangerous_things.each do |dangerous_thing|
+        @blacklist.add_word dangerous_thing
 
-        full_name_words = full_name.split(/\s/)
-        full_name_words.each { |word| @blacklist.add_word(word) }
+        dangerous_thing_words = dangerous_thing.split(/\s/)
+        dangerous_thing_words.each { |word| @blacklist.add_word word }
       end
     end
   end

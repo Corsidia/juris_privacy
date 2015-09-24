@@ -18,7 +18,8 @@ module JurisPrivacy
     end
 
     def add_word(word)
-      @words << word
+      word.chomp!
+      @words << word unless @words.include? word
     end
 
     attr_reader :words
