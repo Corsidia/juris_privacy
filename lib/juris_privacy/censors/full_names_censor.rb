@@ -29,17 +29,29 @@ module JurisPrivacy
     private
 
     def full_name_regex
-      name_regex = /[A-Z][a-záéíóú]{2,25}\s/
-      surname_regex = /[A-Z][a-záéíóú]{2,25}/
+      two_words_name = /
+                         #{name_word_regex}
+                         \s
+                         (?:#{surname_prefix_regex})?
+                         #{name_word_regex}
+                       /x
 
+      multiple_words_name = /
+                              #{name_word_regex}
+                              (?:\s#{name_word_regex})+
+                            /x
+
+      /#{multiple_words_name}|#{two_words_name}/
+    end
+
+    def name_word_regex
+      /[A-Z][a-záéíóú]{2,25}/
+    end
+
+    def surname_prefix_regex
       two_chars_prefix = /[A-Z](?:[a-z]\s|\')/
       common_prefixes = /Dell\'|Della\s|Dello\s|Del\s|Degli\s|Delle\s|Dei\s/
-      surname_prefix_regex = /(?:#{two_chars_prefix}|#{common_prefixes})/
-      /
-        #{name_regex}
-        (?:#{surname_prefix_regex})?
-        #{surname_regex}
-      /x
+      /#{two_chars_prefix}|#{common_prefixes}/
     end
 
     def censor_full_name(full_name)

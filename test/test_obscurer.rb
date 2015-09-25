@@ -75,6 +75,14 @@ class TestObscurer < Minitest::Test
     assert_equal expected_censored_data, @obscurer.inspect(text)
   end
 
+  def test_multiple_name
+    text = 'ciao io mi chiamo Maria Elisabetta Escobar,'\
+           'il mio amico Franco Mauro Giulio Monti'
+    expected_censored_data = { 'M.E.E.' => 'Maria Elisabetta Escobar',
+                               'F.M.G.M.' => 'Franco Mauro Giulio Monti' }
+    assert_equal expected_censored_data, @obscurer.inspect(text)
+  end
+
   def test_tax_code
     text = 'ciao il mio codice fiscale è NGLLNZ92R30C357W'
     expected_censored_data = { 'N.' => 'NGLLNZ92R30C357W' }
