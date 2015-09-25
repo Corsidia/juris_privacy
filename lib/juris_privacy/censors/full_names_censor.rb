@@ -36,7 +36,12 @@ module JurisPrivacy
     end
 
     def full_name_word
-      /#{common_capitalized_word} | #{strange_surname}/x
+      /#{common_capitalized_word} | #{strange_surname} | #{upcase_word}/x
+    end
+
+    def upcase_word
+      # also matches words like: 'DI', 'DA', 'DE'...
+      /[A-Z']{2,25}/x
     end
 
     def common_capitalized_word
@@ -65,7 +70,15 @@ module JurisPrivacy
       false
     end
 
+    # returns true if full_name is not a person name
     def false_positive?(full_name)
+      # if every word in full_name is uppercase (es. 'GUIDO FORTE')
+      # we cannot distinguish between a name and two common words
+      # NOTE: this issue is partially resolved by adding already detected names
+      #       to blacklist: if the name is written in downcase at least one time
+      #       in the examinated text it will be detected by BlacklistWordsCensor
+      return true if upcase?(full_name)
+
       return false if @blacklist.blacklisted?(full_name)
       return true if @whitelist.whitelisted?(full_name)
 
@@ -74,6 +87,10 @@ module JurisPrivacy
         return false unless allowed_word?(word)
       end
       true
+    end
+
+    def upcase?(text)
+      text.upcase == text
     end
 
     def allowed_word?(word)

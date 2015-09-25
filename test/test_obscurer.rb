@@ -61,9 +61,12 @@ class TestObscurer < Minitest::Test
   end
 
   def test_name_with_two_chars_prefixes
-    text = 'ciao io mi chiamo Maria De Filippi, il mio amico Michele D\'Ubaldo'
+    text = 'ciao io mi chiamo Maria De Filippi, il mio amico Marco D\'Ubaldo.'\
+           'Sono presenti in aula Dell\'Utri Marcello e Di Girolamo Matteo'
     expected_censored_data = { 'M.D.F.' => 'Maria De Filippi',
-                               'M.D.' => 'Michele D\'Ubaldo' }
+                               'M.D.' => 'Marco D\'Ubaldo',
+                               'D.M.' => 'Dell\'Utri Marcello',
+                               'D.G.M.' => 'Di Girolamo Matteo' }
     assert_equal expected_censored_data, @obscurer.inspect(text)
   end
 
@@ -83,6 +86,16 @@ class TestObscurer < Minitest::Test
     assert_equal expected_censored_data, @obscurer.inspect(text)
   end
 
+  def test_name_with_upcase_words
+    text = 'Sono qui presenti Mauro BALLARINI, DE ANDRE\' Girolamo,'\
+           'MATILDE Pertini, D\'AMICO Ilaria... non rileviamo però GUIDO FORTE'
+    expected_censored_data = { 'M.B.' => 'Mauro BALLARINI',
+                               'D.A.G.' => 'DE ANDRE\' Girolamo',
+                               'M.P.' => 'MATILDE Pertini',
+                               'D.I.' => 'D\'AMICO Ilaria' }
+    assert_equal expected_censored_data, @obscurer.inspect(text)
+  end
+
   def test_tax_code
     text = 'ciao il mio codice fiscale è NGLLNZ92R30C357W'
     expected_censored_data = { 'N.' => 'NGLLNZ92R30C357W' }
@@ -95,23 +108,5 @@ class TestObscurer < Minitest::Test
     expected_obscured_text = 'ciao io mi chiamo M.F., '\
                              'la mia amica invece si chiama M.F.A.'
     assert_equal expected_obscured_text, @obscurer.obscure_text(text)
-  end
-
-  # rubocop:disable Metrics/MethodLength
-  def test_misc
-    text = 'ciao io mi chiamo luca paoli, qui c\'è un sacco di Gente CHE NON '\
-           'conosco nemmeno TANTO Bene, ci sono per esempio marco di cui '\
-           'non ricordo il cognome, Marco Carta, Luca Carboni, '\
-           'Maria De Filippi, Antonio Conte, PIppo Baudo... e per finire '\
-           'l\'ospite speciale di questa serata è Raffaella Carrà'
-    expected_censored_data = { 'L.' => 'luca',
-                               'M.' => 'marco',
-                               'M.C.' => 'Marco Carta',
-                               'L.C.' => 'Luca Carboni',
-                               'A.C.' => 'Antonio Conte',
-                               'R.C.' => 'Raffaella Carr',
-                               'I.B.' => 'Ippo Baudo',
-                               'M.D.F.' => 'Maria De Filippi' }
-    assert_equal expected_censored_data, @obscurer.inspect(text)
   end
 end
