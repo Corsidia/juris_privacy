@@ -3,7 +3,7 @@ require_relative 'test_helper'
 # TestObscurer
 class TestObscurer < Minitest::Test
   def setup
-    whitelisted_words = %w(arena bicicletta)
+    whitelisted_words = %w(arena bicicletta come non)
     whitelist = JurisPrivacy::Whitelist.new whitelisted_words
     blacklisted_words = %w(marco paolo luca)
     blacklist = JurisPrivacy::Blacklist.new blacklisted_words
@@ -12,7 +12,7 @@ class TestObscurer < Minitest::Test
 
   # Don't censor whitelisted words
   def test_whitelist
-    text = 'ciao io mi chiamo Lattuga Bicicletta'
+    text = 'ciao io mi chiamo Lattuga Bicicletta, Come Non mi riconosci?'
     expected_censored_data = { 'L.Bicicletta' => 'Lattuga Bicicletta' }
     assert_equal expected_censored_data, @obscurer.inspect(text)
   end
